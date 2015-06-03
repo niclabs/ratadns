@@ -1,0 +1,9 @@
+[submodule "ratadns-visualization"]
+	path = ratadns-visualization
+	url = https://github.com/niclabs/ratadns-visualization.git
+[submodule "ratadns-packet-analyzer"]
+	path = ratadns-packet-analyzer
+	url = https://github.com/niclabs/ratadns-packet-analyzer.git
+[submodule "ratadns-processing-logic"]
+	path = ratadns-processing-logic
+	url = https://github.com/niclabs/ratadns-processing-logic.git
