@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "A DNS Analysis Tale"
-date: 2015-12-9 00:00:00 -0300
+date: 2015-9-12 00:00:00 -0300
 ---
 
 Since our last blog entry the architectural design of RaTA DNS has changed.
