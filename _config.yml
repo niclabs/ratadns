@@ -1,7 +1,7 @@
 # Jekyll configuration
 
 name: RaTA-DNS Development Blog 
-description: RaTA-DNS is a framework for realtime analysis of DNS packets. It's based in <a href="https://storm.apache.org/">Apache Storm Framework</a>
+description: RaTA-DNS -Real Time Analysis of DNS packets- is a framework for realtime DNS packet inspection.
 
 # url is currently only used only for the RSS feed in feed.xml
 url: http://niclabs.github.io/ratadns
