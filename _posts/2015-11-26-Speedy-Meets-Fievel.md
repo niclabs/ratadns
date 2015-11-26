@@ -15,7 +15,7 @@ A RaTA DNS monitor consists of a series of tools that define a pipeline. This pi
 
 ![Monitor DNS]({{site.baseurl}}/images/2015-11-26-monitor.png)
 
-The tools that comprise the monitor are TCPDUMP, Speedy and Fievel. These will be described in the sections to come.
+The tools that comprise the monitor are TCPDUMP, Speedy and Fievel. Also, we have another tool that interacts with data from multiple monitors, Jerry, the aggregator/visualization module. All of these tools will be explained later.
 
 # Network Stream Capture
 
@@ -28,11 +28,11 @@ To capture the network stream, 3 cases are considered: Capture directly on the s
 Capturing the DNS packet stream, either directly on the server machine or through port mirroring, it's performed with the help of tcpdump. It has a stable and widespread format, commonly called PCAP. In addition to dump the captured packets into the disk, TCPDUMP may generate a stream into stdout. It's this mechanism that is used in Speedy -our packet serializer- to do its job.
 
 
-# Speedy, Packet Serializer
+# Speedy: Packet Serializer
 
 TCPDUMP output is redirected through a pipe to Speedy, our packet serializer. This module takes a network packet in the PCAP format and interprets it as a DNS packet, including IP and UDP headers. Then analyzes this packet and writes it as a JSON message with a well-defined format. Which parts of the packet are serialized can be chosen when launching the tool. What parts may be chosen?. You may choose the source and destination IP addresses, the DNS's queries section, the DNS's answers section and the authoritative name servers DNS's section.
 
-The module was developed in the C programming language, with the help of several libraries: libpcap was used to read the packets, ldns to read them as DNS packets and json-c packages to serialize the data in the JSON format. Furthermore, it was developed with the use of multiple cores in mind, by the use worker threads. The amount of worker threads can be passed as a parameter when running the program.
+The module was developed in the C programming language, with the help of several libraries: libpcap was used to read the packets, ldns to read them as DNS packets and json-c packages to serialize the data in the JSON format. Furthermore, it was developed with the use of multiple cores in mind, by the use of worker threads. The amount of worker threads can be passed as a parameter when running the program.
 
 The serialization format is a length-prefixed JSON message, so message blocks can be quickly read. An example of Speedy output, both for a query to and an answer from the server is showed below. IP addresses are anonymized with a hash function due to privacy concerns:
 
@@ -48,7 +48,7 @@ The serialization format is a length-prefixed JSON message, so message blocks ca
 
 Speedy writes its data to the standard output, ready to be redirected to our next module: Fievel, the data preprocessing module.
 
-# Fievel, Data Preprocessor
+# Fievel: Data Preprocessor
 
 Fievel is RaTA DNS's data preprocessing module. Its objectives are to reduce the bandwidth occupied by the system and distribute the processing work across multiple monitors. It is a programmable module, where you can write different preliminary reducers, which are the real responsible for data processing.
 
@@ -107,7 +107,7 @@ Multiple preliminar reducers are already coded. For example, a queries per secon
 }
 ```
 
-# Jerry, Aggregator and Information Visualization
+# Jerry: Aggregator and Information Visualization
 
 Jerry keeps listening several Redis channels, one for each PreR. Multiple monitors send their data through the same channels. Jerry extracts the data, and start to process it. With this, aggregated data may be queried by the visualization. More details will came in the future, with its own blog entry.
 
