@@ -4,7 +4,7 @@ RaTA DNS is a real time monitoring framework for multiple DNS servers, which is 
 
 The system consists of a chain of packet processors, which starts in the network stream capture, goes through a serializer, then by a set of preliminary reducers, each of which sends its result through a different channel to an aggregator. The latter is responsible for generating the information needed to finally be consumed by the web visualization.
 
-# Monitor
+## Monitor
 
 A RaTA DNS monitor consists of a series of tools that define a pipeline. This pipeline is used to preprocess the data captured from a single server. At the end of this preprocessing, the results are sent to the aggregator. The aggregator receives preprocessed data from multiple monitors. Generally, we describe a RaTA DNS monitor as a machine whose sole function is to provide this service. However, RaTA DNS monitor can run on the same machine that runs the DNS server. The decision on which option to choose depends on network's needs.
 
@@ -12,7 +12,7 @@ A RaTA DNS monitor consists of a series of tools that define a pipeline. This pi
 
 The tools that comprise the monitor are TCPDUMP, Speedy and Fievel. Also, we have another tool that interacts with data from multiple monitors, Jerry, the aggregator/visualization module. All of these tools will be explained later.
 
-# Network Stream Capture
+## Network Stream Capture
 
 To capture the network stream, 3 cases are considered: Capture directly on the same computer that works as server, capture via switch level port mirroring or replay a previous packet capture. The first two cases correspond to real-time capture of the packet, and the third case is a repetition of events in the past, this with forensic purposes.
 
@@ -23,7 +23,7 @@ To capture the network stream, 3 cases are considered: Capture directly on the s
 Capturing the DNS packet stream, either directly on the server machine or through port mirroring, it's performed with the help of tcpdump. It has a stable and widespread format, commonly called PCAP. In addition to dump the captured packets into the disk, TCPDUMP may generate a stream into stdout. It's this mechanism that is used in Speedy -our packet serializer- to do its job.
 
 
-# Speedy: Packet Serializer
+## Speedy: Packet Serializer
 
 TCPDUMP output is redirected through a pipe to Speedy, our packet serializer. This module takes a network packet in the PCAP format and interprets it as a DNS packet, including IP and UDP headers. Then analyzes this packet and writes it as a JSON message with a well-defined format. Which parts of the packet are serialized can be chosen when launching the tool. What parts may be chosen?. You may choose the source and destination IP addresses, the DNS's queries section, the DNS's answers section and the authoritative name servers DNS's section.
 
@@ -43,7 +43,7 @@ The serialization format is a length-prefixed JSON message, so message blocks ca
 
 Speedy writes its data to the standard output, ready to be redirected to our next module: Fievel, the data preprocessing module.
 
-# Fievel: Data Preprocessor
+## Fievel: Data Preprocessor
 
 Fievel is RaTA DNS's data preprocessing module. Its objectives are to reduce the bandwidth occupied by the system and distribute the processing work across multiple monitors. It is a programmable module, where you can write different preliminary reducers, which are the real responsible for data processing.
 
@@ -102,13 +102,13 @@ Multiple preliminar reducers are already coded. For example, a queries per secon
 }
 ```
 
-# Jerry: Aggregator and Information Visualization
+## Jerry: Aggregator and Information Visualization
 
 Jerry keeps listening several Redis channels, one for each PreR. Multiple monitors send their data through the same channels. Jerry extracts the data, and start to process it. With this, aggregated data may be queried by the visualization. 
 
 - TODO: Complete
 
-# RaTA DNS as a Forensic Tool
+## RaTA DNS as a Forensic Tool
 
 One of the RaTA DNS objectives is to study the behaviour that attackers had with the monitored services, somewhere in the past. With this, attacks patterns may be studied to know how to react in the future. 
 
