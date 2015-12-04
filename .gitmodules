@@ -1,6 +1,6 @@
-[submodule "ratadns-packet-analyzer"]
-	path = ratadns-packet-analyzer
-	url = https://github.com/niclabs/ratadns-packet-analyzer.git
 [submodule "ratadns-filters"]
 	path = ratadns-filters
 	url = https://github.com/niclabs/ratadns-filters
+[submodule "ratadns-speedy"]
+	path = ratadns-speedy
+	url = https://github.com/niclabs/ratadns-speedy
