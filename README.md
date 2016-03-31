@@ -1,3 +1,12 @@
+
+*Notice that this information is currently not up to date, and need to include that: Speedy and Fievel are now merged into one tool, just called Fievel. Our aggregator, now called Gopher, is a brand new GO language module. And our ad-hoc visualization, called Remy, is an on-going AngularJS web application. Also Fievel, has got the ability to replay PCAPs in a configurable replay speed.*
+
+Current github repositories of project modules are:
+
+[Fievel](https://github.com/niclabs/ratadns-fievel)
+[Gopher](https://github.com/niclabs/ratadns-gopher)
+[Remy](https://github.com/niclabs/ratadns-dashboard/tree/angular)
+
 # RaTA DNS - Real Time Analysis over DNS Packet Streams
 
 RaTA DNS is a real time monitoring framework for multiple DNS servers, which is currently in development phase. The system's architecture is modular, to allow for easy extension and optimization of each component.
