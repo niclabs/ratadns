@@ -1,6 +1,0 @@
-[submodule "ratadns-filters"]
-	path = ratadns-filters
-	url = https://github.com/niclabs/ratadns-filters
-[submodule "ratadns-speedy"]
-	path = ratadns-speedy
-	url = https://github.com/niclabs/ratadns-speedy
