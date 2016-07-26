@@ -7,7 +7,7 @@ Current github repositories of project modules are:
 
 [Gopher](https://github.com/niclabs/ratadns-gopher)
 
-[Remy](https://github.com/niclabs/ratadns-dashboard/tree/angular)
+[Remy](https://github.com/niclabs/ratadns-remy)
 
 # RaTA DNS - Real Time Analysis over DNS Packet Streams
 
