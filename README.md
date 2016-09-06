@@ -35,3 +35,8 @@ Gopher is written in Python and can easily be configured to add/remove event pro
 The final step is to visualize the data produced by Gopher. Currently Remy is in development phase as a HTML5 web application that shows the data delivered by one instance of Gopher (that can be receiving data from multiple DNS servers).
 
 Remy shows three different visualizations corresponding to each event processor currently implemented in Gopher mentioned before.
+
+## More information
+
+For more information about each of the projects, please refer to the specific github page of each of them.
+Also there is more information about the entire RaTA DNS project in the [wiki page](https://github.com/niclabs/ratadns/wiki).
