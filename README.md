@@ -6,11 +6,11 @@ The system consists of a chain of packet processors, which starts in the network
 
 RaTA DNS modules are:
 
-[RaTA DNS - Fievel](https://github.com/niclabs/ratadns-fievel) (serializer and preliminary reducer)
+* [RaTA DNS - Fievel](https://github.com/niclabs/ratadns-fievel) (serializer and preliminary reducer)
 
-[RaTA DNS - Gopher](https://github.com/niclabs/ratadns-gopher) (aggregator)
+* [RaTA DNS - Gopher](https://github.com/niclabs/ratadns-gopher) (aggregator)
 
-[RaTA DNS - Remy](https://github.com/niclabs/ratadns-remy) (web visualization)
+* [RaTA DNS - Remy](https://github.com/niclabs/ratadns-remy) (web visualization)
 
 ## Fievel - Monitor and Preliminary Reducer
 
