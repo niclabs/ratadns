@@ -6,10 +6,6 @@ date: 2015-07-24 18:00:00 -0300
 
 RaTA-DNS is composed by three modules: a packet analyzer, a processing logic framework, and a data visualization module.
 
-<center>
-<img src={{site.baseurl}}/images/Arquitectura_trans.png width=80%>
-</center>
-
 Packet analyzer is our equivalent to the DSC collector tool. It takes a DNS packet stream and converts them into JSON objects (a lightweight data-interchange format), which are compressed and sent via a secure connection to a hub. How to capture packets depends on the needs of the DNS admins, but in the first instance `tcpdump` or even the same DSC collector can be used for this purpose. The default pipeline defined in
 this module is as follows:
 
