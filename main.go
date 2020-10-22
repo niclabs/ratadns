@@ -80,7 +80,7 @@ func main() {
 	exiting := make(chan bool)
 	var wg sync.WaitGroup
 
-	go dosomething(resultChannel, exiting, &wg, *wsize, *batchSize, *influxdb, *influxtoken, *influxorg, *influxbucket)
+	go collect(resultChannel, exiting, &wg, *wsize, *batchSize, *influxdb, *influxtoken, *influxorg, *influxbucket)
 
 	// Setup mem profile
 	if *memprofile != "" {
