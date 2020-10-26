@@ -5,6 +5,7 @@ import (
         "github.com/influxdata/influxdb-client-go/v2/api"
         cdns "github.com/niclabs/dnszeppelin"
         "log"
+	"strings"
         "sync"
         "time"
 )
@@ -65,14 +66,24 @@ is focused on the following nine DNS traffic features:
 func aggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 	defer writeAPI.Flush()
 
-	nqueries := make(map[uint16]int)
+	fields := make(map[string]int)
 	domains := make(map[string]int)
 	sources := make(map[string]int)
 	responses := make(map[int]int)
+	qtype := map[uint16]string {
+		1 : "A",
+		2 : "NS",
+		15: "MX",
+		28: "AAAA",
+		255 : "ANY",
+		}
+
 
 	if len(batch) == 0 {
 		return nil
 	}
+
+	now :=  time.Now()
 
 	for _,b := range batch {
 		ip := b.SrcIP.String()
@@ -83,22 +94,41 @@ func aggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 		for _,d := range b.DNS.Question {
 			name := strings.ToLower(d.Name)
 			domains[name] = 1 + domains[name]
-			nqueries[d.Qtype] = 1 + nqueries[d.Qtype]
+			qt := d.Qtype
+			if qt == 1 || qt == 5 || qt == 15 || qt == 28 || qt == 255 {
+				fields[qtype[qt]] = 1 + fields[qtype[qt]]
+				}
 			}
 		}
 	}
-  // Store per qtypes
+
+	// Adding some stats
+
+	fields["TOTAL"] = len(batch)
+	fields["NOERROR"] = responses[0]
+	fields["NXDOMAIN"] = responses[3]
+	fields["UNIQUERY"] = len(domains)
+
+  // Store TNSM stats 
 	go func() {
-		for k,v := range nqueries {
-			if k == 1 || k == 2 || k == 15 || k == 28 || k == 255 {
-				log.Println("qType: ",k," frequency: ",v)
-			}
+		for k,v := range fields {
+			p := influxdb2.NewPoint("stat",
+				map[string]string{"type" : k},
+				map[string]interface{}{"freq" : v},
+				now)
+			writeAPI.WritePoint(p)
+			log.Println("type: ",k," frequency: ",v)
 		}
 	}()
 
-	// Store sources
+	// Store also sources
   go func() {
 		for k,v := range sources {
+			p := influxdb2.NewPoint("source",
+				map[string]string{"ip" : k},
+				map[string]interface{}{"freq" : v},
+                                now)
+			writeAPI.WritePoint(p)
 			log.Println("source: ",k," frequency: ",v)
 		}
 	}()
@@ -106,18 +136,14 @@ func aggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 	// Store domain names
 	go func() {
 		for k,v := range domains {
-			log.Println("name: ",k," frequency: ",v)
+			p := influxdb2.NewPoint("domain",
+				map[string]string{"qname" : k},
+				map[string]interface{}{"freq" : v},
+                                now)
+			writeAPI.WritePoint(p)
+			log.Println("qname: ",k," frequency: ",v)
 		}
 	}()
-
-	// Store responses
-	  go func() {
-    for k,v := range responses {
-      if k == 0 || k == 3 {
-        log.Println("qType: ",k," frequency: ",v)
-      }
-    }
-  }()
 
 	return nil
 }

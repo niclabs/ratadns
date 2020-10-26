@@ -24,9 +24,9 @@ var defraggerChannelReturnSize = flag.Uint("defraggerChannelReturnSize", 500, "S
 var filter = flag.String("filter", "((ip and (ip[9] == 6 or ip[9] == 17)) or (ip6 and (ip6[6] == 17 or ip6[6] == 6 or ip6[6] == 44)))", "BPF filter applied to the packet stream. If port is selected, the packets will not be defragged.")
 var gcTime = flag.Uint("gcTime", 10, "Time in seconds to garbage collect the tcp assembly and ip defragmentation")
 var influxdb = flag.String("influxdb", "localhost:8086", "Address of the Influx database to save the results")
-var influxtoken = flag.String("influxtoken", "", "InfluxDB token")
+var influxtoken = flag.String("influxtoken", "ratadns:ratadns", "InfluxDB token")
 var influxorg = flag.String("influxorg", "", "InfluxDB organization")
-var influxbucket = flag.String("influxbucket", "", "InfluxDB bucket")
+var influxbucket = flag.String("influxbucket", "ratadns/weekly", "InfluxDB bucket")
 var loggerFilename = flag.Bool("loggerFilename", false, "Show the file name and number of the logged string")
 var memprofile = flag.String("memprofile", "", "write memory profile to file")
 var packetHandlerCount = flag.Uint("packetHandlers", 1, "Number of routines used to handle received packets")
@@ -55,9 +55,6 @@ func checkFlags() {
 
 	if *devName != "" && *pcapFile != "" {
 		log.Fatal("You must set only -devName or -pcapFile, and not both")
-	}
-  if *influxdb == "" || *influxtoken == "" || *influxorg == "" || *influxbucket == "" {
-		log.Fatal("You must set the nameserver of your InfluxDB with your token, organization, and bucket info")
 	}
 }
 
