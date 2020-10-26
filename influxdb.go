@@ -95,7 +95,7 @@ func aggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 			name := strings.ToLower(d.Name)
 			domains[name] = 1 + domains[name]
 			qt := d.Qtype
-			if qt == 1 || qt == 5 || qt == 15 || qt == 28 || qt == 255 {
+			if qt == 1 || qt == 2 || qt == 15 || qt == 28 || qt == 255 {
 				fields[qtype[qt]] = 1 + fields[qtype[qt]]
 				}
 			}
