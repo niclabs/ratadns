@@ -103,7 +103,9 @@ func aggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 	}
 
 	// Adding some stats
-
+	for _,v := range qtype {
+		if fields[v] == 0  { fields[v] = 0 }
+	}
 	fields["TOTAL"] = len(batch)
 	fields["NOERROR"] = responses[0]
 	fields["NXDOMAIN"] = responses[3]
