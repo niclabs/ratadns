@@ -23,7 +23,7 @@ var defraggerChannelSize = flag.Uint("defraggerChannelSize", 500, "Size of the c
 var defraggerChannelReturnSize = flag.Uint("defraggerChannelReturnSize", 500, "Size of the channel where the defragged packets are returned")
 var filter = flag.String("filter", "((ip and (ip[9] == 6 or ip[9] == 17)) or (ip6 and (ip6[6] == 17 or ip6[6] == 6 or ip6[6] == 44)))", "BPF filter applied to the packet stream. If port is selected, the packets will not be defragged.")
 var gcTime = flag.Uint("gcTime", 10, "Time in seconds to garbage collect the tcp assembly and ip defragmentation")
-var influxdb = flag.String("influxdb", "localhost:8086", "Address of the Influx database to save the results")
+var influxdb = flag.String("influxdb", "http://localhost:8086", "Address of the Influx database to save the results")
 var influxtoken = flag.String("influxtoken", "ratadns:ratadns", "InfluxDB token")
 var influxorg = flag.String("influxorg", "", "InfluxDB organization")
 var influxbucket = flag.String("influxbucket", "ratadns/weekly", "InfluxDB bucket")
