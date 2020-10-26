@@ -81,7 +81,8 @@ func aggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 			responses[b.DNS.Rcode] = 1 + responses[b.DNS.Rcode]
 		} else {
 		for _,d := range b.DNS.Question {
-			domains[d.Name] = 1 + domains[d.Name]
+			name := strings.ToLower(d.Name)
+			domains[name] = 1 + domains[name]
 			nqueries[d.Qtype] = 1 + nqueries[d.Qtype]
 			}
 		}
