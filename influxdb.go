@@ -117,7 +117,6 @@ func aggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 				map[string]interface{}{"freq" : v},
 				now)
 			writeAPI.WritePoint(p)
-			log.Println("type: ",k," frequency: ",v)
 		}
 	}()
 
@@ -129,7 +128,6 @@ func aggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 				map[string]interface{}{"freq" : v},
                                 now)
 			writeAPI.WritePoint(p)
-			log.Println("source: ",k," frequency: ",v)
 		}
 	}()
 
@@ -141,7 +139,6 @@ func aggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 				map[string]interface{}{"freq" : v},
                                 now)
 			writeAPI.WritePoint(p)
-			log.Println("qname: ",k," frequency: ",v)
 		}
 	}()
 
