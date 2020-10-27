@@ -82,6 +82,7 @@ func aggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 	if len(batch) == 0 {
 		return nil
 	}
+	fields["TOTAL"] = 0
 
 	now :=  time.Now()
 
@@ -91,6 +92,7 @@ func aggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 		if b.DNS.Response  {
 			responses[b.DNS.Rcode] = 1 + responses[b.DNS.Rcode]
 		} else {
+		fields["TOTAL"] = 1 + fields["TOTAL"]
 		for _,d := range b.DNS.Question {
 			name := strings.ToLower(d.Name)
 			domains[name] = 1 + domains[name]
@@ -106,7 +108,6 @@ func aggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 	for _,v := range qtype {
 		if fields[v] == 0  { fields[v] = 0 }
 	}
-	fields["TOTAL"] = len(batch)
 	fields["NOERROR"] = responses[0]
 	fields["NXDOMAIN"] = responses[3]
 	fields["UNIQUERY"] = len(domains)
