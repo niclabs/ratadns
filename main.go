@@ -99,7 +99,10 @@ func main() {
 
 	// Start listening
 
-	for _, dev := range strings.Split(*devName,",") {
+	s := *devName
+	log.Println("devs = ",s)
+
+	for _, dev := range strings.Split(s,",") {
 		capturer := cdns.NewDNSCapturer(cdns.CaptureOptions{
 			dev,
 			*pcapFile,
