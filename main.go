@@ -99,10 +99,7 @@ func main() {
 
 	// Start listening
 
-	s := *devName
-	log.Println("devs = ",s)
-
-	for _, dev := range strings.Split(s,",") {
+	for _, dev := range strings.Split(*devName,",") {
 		capturer := cdns.NewDNSCapturer(cdns.CaptureOptions{
 			dev,
 			*pcapFile,
@@ -119,7 +116,7 @@ func main() {
 			*defraggerChannelReturnSize,
 			exiting,
 		})
-		capturer.Start()
+		go capturer.Start()
 	}
 	// Wait for the output to finish
 	log.Println("Exiting")
