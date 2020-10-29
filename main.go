@@ -17,7 +17,7 @@ var pcapFile = flag.String("pcapFile", "", "Pcap filename to run")
 // Filter is not using "(port 53)", as it will filter out fragmented udp 
 // packets, instead, we filter by the ip protocol and check again in the
 // application.
-var batchSize = flag.Uint("batchSize", 10000000, "Minimun capacity of the cache array used to send data to clickhouse. Set close to the queries per minute received to prevent allocations")
+var batchSize = flag.Uint("batchSize", 200000, "Minimun capacity of the cache array used to send data to clickhouse. Set close to the queries per minute received to prevent allocations")
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
 var defraggerChannelSize = flag.Uint("defraggerChannelSize", 500, "Size of the channel to send packets to be defragged")
 var defraggerChannelReturnSize = flag.Uint("defraggerChannelReturnSize", 500, "Size of the channel where the defragged packets are returned")
