@@ -39,6 +39,7 @@ func collect(resultChannel chan cdns.DNSResult, exiting chan bool, wg *sync.Wait
                                 batch = make([]cdns.DNSResult, 0, batchSize)
                         }
                 case <-exiting:
+			exiting <- true
                         return
                 }
         }

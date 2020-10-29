@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"runtime/pprof"
+	"strings"
 	"sync"
 	"time"
 
@@ -97,24 +98,26 @@ func main() {
 	}
 
 	// Start listening
-	capturer := cdns.NewDNSCapturer(cdns.CaptureOptions{
-		*devName,
-		*pcapFile,
-		*filter,
-		uint16(*port),
-		time.Duration(*gcTime) * time.Second,
-		resultChannel,
-		*packetHandlerCount,
-		*packetChannelSize,
-		*tcpHandlerCount,
-		*tcpAssemblyChannelSize,
-		*tcpResultChannelSize,
-		*defraggerChannelSize,
-		*defraggerChannelReturnSize,
-		exiting,
-	})
-	capturer.Start()
 
+	for _, dev := range strings.Split(*devName,",") {
+		capturer := cdns.NewDNSCapturer(cdns.CaptureOptions{
+			dev,
+			*pcapFile,
+			*filter,
+			uint16(*port),
+			time.Duration(*gcTime) * time.Second,
+			resultChannel,
+			*packetHandlerCount,
+			*packetChannelSize,
+			*tcpHandlerCount,
+			*tcpAssemblyChannelSize,
+			*tcpResultChannelSize,
+			*defraggerChannelSize,
+			*defraggerChannelReturnSize,
+			exiting,
+		})
+		capturer.Start()
+	}
 	// Wait for the output to finish
 	log.Println("Exiting")
 	wg.Wait()
