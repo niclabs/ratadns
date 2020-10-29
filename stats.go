@@ -4,6 +4,7 @@ import (
         "github.com/influxdata/influxdb-client-go/v2"
         "github.com/influxdata/influxdb-client-go/v2/api"
         cdns "github.com/niclabs/dnszeppelin"
+	dns "github.com/miekg/dns"
 	"strings"
         "time"
 )
@@ -34,14 +35,6 @@ func aggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 	domains := make(map[string]int)
 	sources := make(map[string]int)
 	responses := make(map[int]int)
-	qtype := map[uint16]string {
-		1 : "A",
-		2 : "NS",
-		15: "MX",
-		28: "AAAA",
-		255 : "ANY",
-		}
-
 
 	if len(batch) == 0 {
 		return nil
@@ -62,18 +55,13 @@ func aggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 			for _,d := range b.DNS.Question {
 				name := strings.ToLower(d.Name)
 				domains[name] = 1 + domains[name]
-				qt := d.Qtype
-				if qt == 1 || qt == 2 || qt == 15 || qt == 28 || qt == 255 {
-					fields[qtype[qt]] = 1 + fields[qtype[qt]]
-				}
+				qt := dns.TypeToString[d.Qtype]
+				fields[qt] = 1 + fields[qt]
 			}
 		}
 	}
 
 	// Adding some stats
-	for _,v := range qtype {
-		if fields[v] == 0  { fields[v] = 0 }
-	}
 	fields["NOERROR"] = responses[0]
 	fields["NXDOMAIN"] = responses[3]
 	fields["UNIQUERY"] = len(domains)
