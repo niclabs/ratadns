@@ -31,45 +31,54 @@ is focused on the following nine DNS traffic features:
 func aggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 	defer writeAPI.Flush()
 
-	type Key struct {
+	type Q struct {
 		qtype,ip,qname string
+	}
+	type R struct {
+		rcode,ip,qname string
 	}
 
 	fields := make(map[string]int)
 	sources := make(map[string]int)
 	domains := make(map[string]int)
-	info := make(map[Key]int)
-	responses := make(map[int]int)
+	info := make(map[Q]int)
+	responses := make(map[R]int)
 
 	if len(batch) == 0 {
 		return nil
 	}
 	fields["TOTALQ"] = 0
 	fields["TOTALR"] = 0
+	fields["NOERROR"] = 0
+	fields["NXDOMAIN"] = 0
 
 	now :=  time.Now()
 
 	for _,b := range batch {
-		ip := b.SrcIP.String()
+		src := b.SrcIP.String()
+		dst := b.DstIP.String()
+
 		if b.DNS.Response  {
-			fields["TOTALR"] = 1 + fields["TOTALR"]
-			responses[b.DNS.Rcode] = 1 + responses[b.DNS.Rcode]
+			fields["TOTALR"]++
+			rc := dns.RcodeToString[b.DNS.Rcode]
+			if b.DNS.Rcode == 0 {fields["NOERROR"]++}
+			if b.DNS.Rcode == 3 {fields["NXDOMAIN"]++}
+			name := strings.ToLower(b.DNS.Question[0].Name)
+			responses[R{rc,dst,name}] = 1 + responses[R{rc,dst,name}]
 		} else {
 			fields["TOTALQ"] = 1 + fields["TOTALQ"]
-			sources[ip] = 1 + sources[ip]
+			sources[src] = 1 + sources[src]
 			for _,d := range b.DNS.Question {
 				name := strings.ToLower(d.Name)
 				domains[name] = 1 + domains[name]
 				qt := dns.TypeToString[d.Qtype]
 				fields[qt] = 1 + fields[qt]
-				info[Key{qt,ip,name}] = 1 + info[Key{qt,ip,name}]
+				info[Q{qt,src,name}] = 1 + info[Q{qt,src,name}]
 			}
 		}
 	}
 
 	// Adding some stats
-	fields["NOERROR"] = responses[0]
-	fields["NXDOMAIN"] = responses[3]
 	fields["UNIQUERY"] = len(domains)
 
   // Store TNSM stats 
@@ -87,7 +96,10 @@ func aggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 	  go func() {
 		for k,v := range responses {
 			p := influxdb2.NewPoint("responses",
-				map[string]string{"r" : dns.RcodeToString[k]},
+				map[string]string{
+					"rcode" : k.rcode,
+					"ip" : k.ip,
+					"qname" : k.qname},
 				map[string]interface{}{"freq" : v},
                                 now)
 			writeAPI.WritePoint(p)
