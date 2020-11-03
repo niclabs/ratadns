@@ -31,9 +31,14 @@ is focused on the following nine DNS traffic features:
 func aggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 	defer writeAPI.Flush()
 
+	type Key struct {
+		qtype,ip,qname string
+	}
+
 	fields := make(map[string]int)
-	domains := make(map[string]int)
 	sources := make(map[string]int)
+	domains := make(map[string]int)
+	info := make(map[Key]int)
 	responses := make(map[int]int)
 
 	if len(batch) == 0 {
@@ -46,17 +51,18 @@ func aggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 
 	for _,b := range batch {
 		ip := b.SrcIP.String()
+		sources[ip] = 1 + sources[ip]
 		if b.DNS.Response  {
 			fields["TOTALR"] = 1 + fields["TOTALR"]
 			responses[b.DNS.Rcode] = 1 + responses[b.DNS.Rcode]
 		} else {
 			fields["TOTALQ"] = 1 + fields["TOTALQ"]
-			sources[ip] = 1 + sources[ip]
 			for _,d := range b.DNS.Question {
 				name := strings.ToLower(d.Name)
 				domains[name] = 1 + domains[name]
 				qt := dns.TypeToString[d.Qtype]
 				fields[qt] = 1 + fields[qt]
+				info[Key{qt,ip,name}] = 1 + info[Key{qt,ip,name}]
 			}
 		}
 	}
@@ -98,6 +104,20 @@ func aggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 			writeAPI.WritePoint(p)
 		}
 	}()
+
+        // Store extra info
+        go func() {
+                for k,v := range info {
+                        p := influxdb2.NewPoint("info",
+                                map[string]string{
+					"qtype" : k.qtype,
+					"ip" : k.ip,
+					"qname" : k.qname},
+                                map[string]interface{}{"freq" : v},
+                                now)
+                        writeAPI.WritePoint(p)
+                }
+        }()
 
 	return nil
 }
