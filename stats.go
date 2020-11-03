@@ -51,12 +51,12 @@ func aggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 
 	for _,b := range batch {
 		ip := b.SrcIP.String()
-		sources[ip] = 1 + sources[ip]
 		if b.DNS.Response  {
 			fields["TOTALR"] = 1 + fields["TOTALR"]
 			responses[b.DNS.Rcode] = 1 + responses[b.DNS.Rcode]
 		} else {
 			fields["TOTALQ"] = 1 + fields["TOTALQ"]
+			sources[ip] = 1 + sources[ip]
 			for _,d := range b.DNS.Question {
 				name := strings.ToLower(d.Name)
 				domains[name] = 1 + domains[name]
