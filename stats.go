@@ -63,7 +63,8 @@ func aggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 			rc := dns.RcodeToString[b.DNS.Rcode]
 			if b.DNS.Rcode == 0 {fields["NOERROR"]++}
 			if b.DNS.Rcode == 3 {fields["NXDOMAIN"]++}
-			name := strings.ToLower(b.DNS.Question[0].Name)
+			name := ""
+			if len(b.DNS.Question) > 0 {name=strings.ToLower(b.DNS.Question[0].Name)}
 			responses[R{rc,dst,name}] = 1 + responses[R{rc,dst,name}]
 		} else {
 			fields["TOTALQ"] = 1 + fields["TOTALQ"]
