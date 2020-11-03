@@ -83,22 +83,11 @@ func aggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 		}
 	}()
 
-	// Store also sources
-  go func() {
-		for k,v := range sources {
-			p := influxdb2.NewPoint("source",
-				map[string]string{"ip" : k},
-				map[string]interface{}{"freq" : v},
-                                now)
-			writeAPI.WritePoint(p)
-		}
-	}()
-
-	// Store domain names
-	go func() {
-		for k,v := range domains {
-			p := influxdb2.NewPoint("domain",
-				map[string]string{"qname" : k},
+	// Store also responses
+	  go func() {
+		for k,v := range responses {
+			p := influxdb2.NewPoint("responses",
+				map[string]string{"r" : dns.RcodeToString[k]},
 				map[string]interface{}{"freq" : v},
                                 now)
 			writeAPI.WritePoint(p)
