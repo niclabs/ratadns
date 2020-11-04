@@ -26,7 +26,7 @@ is focused on the following nine DNS traffic features:
 • Total number of DNS packets (9).
 */
 
-func aggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
+func InfluxAggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 	defer writeAPI.Flush()
 
 	type Key struct {

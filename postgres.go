@@ -9,7 +9,7 @@ import (
 )
 
 
-func InfluxCollect(resultChannel chan cdns.DNSResult, exiting chan bool, wg *sync.WaitGroup, wsize, batchSize uint, influxdb, influxtoken, influxorg, influxbucket string){
+func PGCollect(resultChannel chan cdns.DNSResult, exiting chan bool, wg *sync.WaitGroup, wsize, batchSize uint, influxdb, influxtoken, influxorg, influxbucket string){
         wg.Add(1)
         defer wg.Done()
 
@@ -29,7 +29,7 @@ func InfluxCollect(resultChannel chan cdns.DNSResult, exiting chan bool, wg *syn
                 case data := <-resultChannel:
                         batch = append(batch, data)
                 case <-ticker.C:
-                        if err := InfluxAggAndStore(writeAPI,batch); err != nil {
+                        if err := PGAggAndStore(writeAPI,batch); err != nil {
                                 log.Fatal("Error writing to DB:", err)
                                 exiting <- true
                                 return
