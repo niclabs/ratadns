@@ -36,7 +36,6 @@ func InfluxAggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 	fields := make(map[string]int)
 	sources := make(map[string]int)
 	domains := make(map[string]int)
-	info := make(map[Key]int)
 	responses := make(map[int]int)
 
 	if len(batch) == 0 {
@@ -60,7 +59,6 @@ func InfluxAggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 				domains[name] = 1 + domains[name]
 				qt := dns.TypeToString[d.Qtype]
 				fields[qt] = 1 + fields[qt]
-				info[Key{qt,ip,name}] = 1 + info[Key{qt,ip,name}]
 			}
 		}
 	}
@@ -103,19 +101,6 @@ func InfluxAggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 		}
 	}()
 
-        // Store extra info
-        go func() {
-                for k,v := range info {
-                        p := influxdb2.NewPoint("info",
-                                map[string]string{
-					"qtype" : k.qtype,
-					"ip" : k.ip,
-					"qname" : k.qname},
-                                map[string]interface{}{"freq" : v},
-                                now)
-                        writeAPI.WritePoint(p)
-                }
-        }()
 
 	return nil
 }
