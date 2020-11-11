@@ -29,17 +29,9 @@ is focused on the following nine DNS traffic features:
 func InfluxAggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 	defer writeAPI.Flush()
 
-
-	type TypeName struct {
-		qtype,qname string
-	}
-	type TypeIp struct {
-		qtype,ip string
-	}
-
 	fields := make(map[string]int)
-	sources := make(map[TypeIp]int)
-	domains := make(map[TypeName]int)
+	sources := make(map[string]int)
+	domains := make(map[string]int)
 	responses := make(map[int]int)
 
 	if len(batch) == 0 {
@@ -60,10 +52,8 @@ func InfluxAggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 			for _,d := range b.DNS.Question {
 				qt := dns.TypeToString[d.Qtype]
 				name := strings.ToLower(d.Name)
-				tn := TypeName{qt,name}
-				ti := TypeIp{qt,ip}	
-				domains[tn] = 1 + domains[tn]
-				sources[ti] = 1 + sources[ti]
+				domains[name] = 1 + domains[name]
+				sources[ip] = 1 + sources[ip]
 				fields[qt] = 1 + fields[qt]
 			}
 		}
@@ -89,10 +79,7 @@ func InfluxAggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
   go func() {
 		for k,v := range sources {
 			p := influxdb2.NewPoint("source",
-				map[string]string{
-					"qtype" : k.qtype,
-					"ip" : k.ip,
-					},
+				map[string]string{ "ip" : k, },
 				map[string]interface{}{"freq" : v},
                                 now)
 			writeAPI.WritePoint(p)
@@ -103,9 +90,7 @@ func InfluxAggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 	go func() {
 		for k,v := range domains {
 			p := influxdb2.NewPoint("domain",
-				map[string]string{
-					"qtype" : k.qtype,
-					"qname" : k.qname,
+				map[string]string{ "qname" : k,
 					},
 				map[string]interface{}{"freq" : v},
                                 now)
