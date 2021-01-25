@@ -78,7 +78,18 @@ func main() {
 	exiting := make(chan bool)
 	var wg sync.WaitGroup
 
-	go InfluxCollect(resultChannel, exiting, &wg, *wsize, *batchSize, *influxdb, *influxtoken, *influxorg, *influxbucket)
+	db := DefaultDB{*influxdb, *influxtoken, *influxorg, *influxbucket}
+	var d database
+	db.createClient(&d)
+	db.createApi(&d)
+
+	fields := make(map[string]int)
+	sources := make(map[string]int)
+	domains := make(map[string]int)
+	responses := make(map[int]int)
+
+	m := maps{fields, sources, domains, responses}
+	go d.InfluxCollect(resultChannel, exiting, &wg, *wsize, *batchSize, &m)
 
 	// Setup mem profile
 	if *memprofile != "" {

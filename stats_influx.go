@@ -2,7 +2,6 @@ package main
 
 import (
         "github.com/influxdata/influxdb-client-go/v2"
-        "github.com/influxdata/influxdb-client-go/v2/api"
         cdns "github.com/niclabs/dnszeppelin"
 	dns "github.com/miekg/dns"
 	"strings"
@@ -26,13 +25,21 @@ is focused on the following nine DNS traffic features:
 • Total number of DNS packets (9).
 */
 
-func InfluxAggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
-	defer writeAPI.Flush()
+type maps struct{
+	fields map[string]int
+	sources map[string]int
+	domains map[string]int
+	responses map[int]int
+}
 
-	fields := make(map[string]int)
-	sources := make(map[string]int)
-	domains := make(map[string]int)
-	responses := make(map[int]int)
+func InfluxAgg(batch []cdns.DNSResult, m *maps) error {
+	//sacar defer y ponerlo en main??
+	//defer writeAPI.Flush()
+	
+	fields := m.fields
+	sources := m.sources
+	domains := m.domains
+	responses := m.responses
 
 	if len(batch) == 0 {
 		return nil
@@ -40,7 +47,7 @@ func InfluxAggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 	fields["TOTALQ"] = 0
 	fields["TOTALR"] = 0
 
-	now :=  time.Now()
+	//now :=  time.Now()
 
 	for _,b := range batch {
 		ip := b.SrcIP.String()
@@ -64,40 +71,33 @@ func InfluxAggAndStore(writeAPI api.WriteAPI, batch []cdns.DNSResult) error {
 	fields["NXDOMAIN"] = responses[3]
 	fields["UNIQUERY"] = len(domains)
 
-  // Store TNSM stats 
-	go func() {
-		for k,v := range fields {
-			p := influxdb2.NewPoint("stat",
-				map[string]string{"type" : k},
-				map[string]interface{}{"freq" : v},
-				now)
-			writeAPI.WritePoint(p)
-		}
-	}()
+	return nil
+}
 
+func (d database) InfluxStore(m *maps, batch []cdns.DNSResult) error{
+	if len(batch) == 0 {
+		return nil
+	}
+
+	now :=  time.Now()
+	defer d.api.Flush() 
+	// Store TNSM stats 
+	go d.StoreEachMap(m.fields, "stat", "freq",  now)
 	// Store also sources
-  go func() {
-		for k,v := range sources {
-			p := influxdb2.NewPoint("source",
-				map[string]string{ "ip" : k, },
-				map[string]interface{}{"freq" : v},
-                                now)
-			writeAPI.WritePoint(p)
-		}
-	}()
-
+	go d.StoreEachMap(m.sources, "source", "ip",  now)
 	// Store domain names
-	go func() {
-		for k,v := range domains {
-			p := influxdb2.NewPoint("domain",
-				map[string]string{ "qname" : k,
-					},
-				map[string]interface{}{"freq" : v},
-                                now)
-			writeAPI.WritePoint(p)
-		}
-	}()
-
+	go d.StoreEachMap(m.domains, "domain", "qname",now)
 
 	return nil
+}
+
+//fn que reemplaza los store domin, sources, stats
+func (d database) StoreEachMap(mapa map[string]int, tipo1, tipo2 string , now time.Time) {
+	for k,v := range mapa {
+		p := influxdb2.NewPoint(tipo1,
+			map[string]string{tipo2 : k},
+			map[string]interface{}{"freq" : v},
+			now)
+		d.api.WritePoint(p)
+	}
 }
