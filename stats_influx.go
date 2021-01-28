@@ -35,39 +35,39 @@ type maps struct {
 
 func InfluxAgg(batch []cdns.DNSResult, m *maps) error {
 
-	fields := m.fields
-	sources := m.sources
-	domains := m.domains
-	responses := m.responses
+	m.fields = make(map[string]int)
+	m.sources = make(map[string]int)
+	m.domains = make(map[string]int)
+	m.responses = make(map[int]int)
 
 	if len(batch) == 0 {
 		return nil
 	}
 
-	fields["TOTALQ"] = 0
-	fields["TOTALR"] = 0
+	m.fields["TOTALQ"] = 0
+	m.fields["TOTALR"] = 0
 
 	for _, b := range batch {
 		ip := b.SrcIP.String()
 		if b.DNS.Response {
-			fields["TOTALR"] = 1 + fields["TOTALR"]
-			responses[b.DNS.Rcode] = 1 + responses[b.DNS.Rcode]
+			m.fields["TOTALR"] = 1 + m.fields["TOTALR"]
+			m.responses[b.DNS.Rcode] = 1 + m.responses[b.DNS.Rcode]
 		} else {
-			fields["TOTALQ"] = 1 + fields["TOTALQ"]
+			m.fields["TOTALQ"] = 1 + m.fields["TOTALQ"]
 			for _, d := range b.DNS.Question {
 				qt := dns.TypeToString[d.Qtype]
 				name := strings.ToLower(d.Name)
-				domains[name] = 1 + domains[name]
-				sources[ip] = 1 + sources[ip]
-				fields[qt] = 1 + fields[qt]
+				m.domains[name] = 1 + m.domains[name]
+				m.sources[ip] = 1 + m.sources[ip]
+				m.fields[qt] = 1 + m.fields[qt]
 			}
 		}
 	}
 
 	// Adding some stats
-	fields["NOERROR"] = responses[0]
-	fields["NXDOMAIN"] = responses[3]
-	fields["UNIQUERY"] = len(domains)
+	m.fields["NOERROR"] = m.responses[0]
+	m.fields["NXDOMAIN"] = m.responses[3]
+	m.fields["UNIQUERY"] = len(m.domains)
 
 	return nil
 }
