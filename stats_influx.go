@@ -1,18 +1,18 @@
 package main
 
 import (
-        "github.com/influxdata/influxdb-client-go/v2"
-        cdns "github.com/niclabs/dnszeppelin"
-	dns "github.com/miekg/dns"
 	"strings"
-        "time"
-)
+	"time"
 
+	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
+	dns "github.com/miekg/dns"
+	cdns "github.com/niclabs/dnszeppelin"
+)
 
 /*
 From:
 Detecting Anomalies at a TLD Name Server Based on DNS Traffic Predictions
-Diego Madariaga, Javier Madariaga, Martı́n Panza, Javier Bustos-Jiménez, 
+Diego Madariaga, Javier Madariaga, Martı́n Panza, Javier Bustos-Jiménez,
 and Benjamin Bustos
 IEEE Transactions on Network and Service Management (IEEE TNSM) Journal
 Given the aforementioned, our proposed AD-BoP method
@@ -25,15 +25,16 @@ is focused on the following nine DNS traffic features:
 • Total number of DNS packets (9).
 */
 
-type maps struct{
-	fields map[string]int
-	sources map[string]int
-	domains map[string]int
+type maps struct {
+	fields    map[string]int
+	sources   map[string]int
+	domains   map[string]int
 	responses map[int]int
+	filter    map[string][]float64
 }
 
 func InfluxAgg(batch []cdns.DNSResult, m *maps) error {
-	
+
 	fields := m.fields
 	sources := m.sources
 	domains := m.domains
@@ -46,14 +47,14 @@ func InfluxAgg(batch []cdns.DNSResult, m *maps) error {
 	fields["TOTALQ"] = 0
 	fields["TOTALR"] = 0
 
-	for _,b := range batch {
+	for _, b := range batch {
 		ip := b.SrcIP.String()
-		if b.DNS.Response  {
+		if b.DNS.Response {
 			fields["TOTALR"] = 1 + fields["TOTALR"]
 			responses[b.DNS.Rcode] = 1 + responses[b.DNS.Rcode]
 		} else {
 			fields["TOTALQ"] = 1 + fields["TOTALQ"]
-			for _,d := range b.DNS.Question {
+			for _, d := range b.DNS.Question {
 				qt := dns.TypeToString[d.Qtype]
 				name := strings.ToLower(d.Name)
 				domains[name] = 1 + domains[name]
@@ -71,28 +72,51 @@ func InfluxAgg(batch []cdns.DNSResult, m *maps) error {
 	return nil
 }
 
-func (d database) InfluxStore(m *maps, batch []cdns.DNSResult) error{
-	if len(batch) == 0 {
-		return nil
+func emafilter(m *maps, number int, stat string) error {
+
+	if m.filter["DATA"+stat] == nil {
+		var array []float64
+		m.filter["DATA"+stat] = array
 	}
 
-	now :=  time.Now()
-	defer d.api.Flush() 
-	// Store TNSM stats 
-	go d.StoreEachMap(m.fields, "stat", "type",  now)
-	// Store also sources
-	go d.StoreEachMap(m.sources, "source", "ip",  now)
-	// Store domain names
-	go d.StoreEachMap(m.domains, "domain", "qname",now)
+	if len(m.filter["DATA"+stat]) > number {
+		step := Emastep(float64(number), float64(m.fields[stat]), float64(m.fields["TREND"+stat]))
+		m.fields["TREND"+stat] = int(step)
+	} else if len(m.filter["DATA"+stat]) == number {
+		m.filter["DATA"+stat] = append(m.filter["DATA"+stat], float64(m.fields[stat]))
+		filtered := Ema(number, m.filter["DATA"+stat])
+		//si se quiere registrar los primeros "number" estimaciones:
+		//m.filter["FIRSTTREND"+stat] = filtered
+		m.fields[stat] = int(filtered[len(filtered)-1])
+	} else {
+		m.filter["DATA"+stat] = append(m.filter["DATA"+stat], float64(m.fields[stat]))
+	}
 
 	return nil
 }
 
-func (d database) StoreEachMap(mapa map[string]int, metric, field string , now time.Time) {
-	for k,v := range mapa {
+func (d database) InfluxStore(m *maps, batch []cdns.DNSResult) error {
+	if len(batch) == 0 {
+		return nil
+	}
+
+	now := time.Now()
+	defer d.api.Flush()
+	// Store TNSM stats
+	go d.StoreEachMap(m.fields, "stat", "type", now)
+	// Store also sources
+	go d.StoreEachMap(m.sources, "source", "ip", now)
+	// Store domain names
+	go d.StoreEachMap(m.domains, "domain", "qname", now)
+
+	return nil
+}
+
+func (d database) StoreEachMap(mapa map[string]int, metric, field string, now time.Time) {
+	for k, v := range mapa {
 		p := influxdb2.NewPoint(metric,
-			map[string]string{field : k},
-			map[string]interface{}{"freq" : v},
+			map[string]string{field: k},
+			map[string]interface{}{"freq": v},
 			now)
 		d.api.WritePoint(p)
 	}
