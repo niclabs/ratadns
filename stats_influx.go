@@ -79,7 +79,7 @@ func (d database) InfluxStore(m *maps, batch []cdns.DNSResult) error{
 	now :=  time.Now()
 	defer d.api.Flush() 
 	// Store TNSM stats 
-	go d.StoreEachMap(m.fields, "stat", "freq",  now)
+	go d.StoreEachMap(m.fields, "stat", "type",  now)
 	// Store also sources
 	go d.StoreEachMap(m.sources, "source", "ip",  now)
 	// Store domain names

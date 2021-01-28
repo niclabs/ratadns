@@ -239,8 +239,8 @@ func TestStoreEachMap(t *testing.T) {
   
 	m.
 	  EXPECT().
-	  StoreEachMap(testmap.fields, "stat", "freq",  now)
+	  StoreEachMap(testmap.fields, "stat", "type",  now)
   
-	m.StoreEachMap(testmap.fields, "stat", "freq",  now)
+	m.StoreEachMap(testmap.fields, "stat", "type",  now)
 }
 
