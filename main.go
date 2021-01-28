@@ -8,14 +8,16 @@ import (
 	"sync"
 	"time"
 
-	cdns "github.com/niclabs/dnszeppelin"
 	"os"
 	"runtime"
+
+	cdns "github.com/niclabs/dnszeppelin"
 )
 
 var devName = flag.String("devName", "", "Device used to capture")
 var pcapFile = flag.String("pcapFile", "", "Pcap filename to run")
-// Filter is not using "(port 53)", as it will filter out fragmented udp 
+
+// Filter is not using "(port 53)", as it will filter out fragmented udp
 // packets, instead, we filter by the ip protocol and check again in the
 // application.
 var batchSize = flag.Uint("batchSize", 200000, "Minimun capacity of the cache array used to send data to clickhouse. Set close to the queries per minute received to prevent allocations")
@@ -73,7 +75,6 @@ func main() {
 	}
 	resultChannel := make(chan cdns.DNSResult, *resultChannelSize)
 
-
 	// Setup output routine
 	exiting := make(chan bool)
 	var wg sync.WaitGroup
@@ -87,30 +88,31 @@ func main() {
 	sources := make(map[string]int)
 	domains := make(map[string]int)
 	responses := make(map[int]int)
+	filtermap := make(map[string][]float64)
 
-	m := maps{fields, sources, domains, responses}
+	m := maps{fields, sources, domains, responses, filtermap}
 	go d.InfluxCollect(resultChannel, exiting, &wg, *wsize, *batchSize, &m)
 
 	// Setup mem profile
 	if *memprofile != "" {
 		go func() {
 			time.Sleep(120 * time.Second)
-				log.Println("Writing memory profile")
-				f, err := os.Create(*memprofile)
-				if err != nil {
-					log.Fatal("could not create memory profile: ", err)
-				}
-				runtime.GC() // get up-to-date statistics
-				if err := pprof.WriteHeapProfile(f); err != nil {
-					log.Fatal("could not write memory profile: ", err)
-				}
-				f.Close()
+			log.Println("Writing memory profile")
+			f, err := os.Create(*memprofile)
+			if err != nil {
+				log.Fatal("could not create memory profile: ", err)
+			}
+			runtime.GC() // get up-to-date statistics
+			if err := pprof.WriteHeapProfile(f); err != nil {
+				log.Fatal("could not write memory profile: ", err)
+			}
+			f.Close()
 		}()
 	}
 
 	// Start listening
 
-	for _, dev := range strings.Split(*devName,",") {
+	for _, dev := range strings.Split(*devName, ",") {
 		capturer := cdns.NewDNSCapturer(cdns.CaptureOptions{
 			dev,
 			*pcapFile,
