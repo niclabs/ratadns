@@ -72,7 +72,9 @@ func InfluxAgg(batch []cdns.DNSResult, m *maps) error {
 	return nil
 }
 
-func emafilter(m *maps, number int, ttype string) error {
+func emafilter(m *maps, ttype string) error {
+
+	var number int = 120
 
 	if m.filter["DATA"+ttype] == nil {
 		var array []float64
