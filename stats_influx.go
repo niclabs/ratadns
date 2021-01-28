@@ -86,7 +86,7 @@ func emafilter(m *maps, number int, ttype string) error {
 		m.filter["DATA"+ttype] = append(m.filter["DATA"+ttype], float64(m.fields[ttype]))
 		filtered := Ema(number, m.filter["DATA"+ttype])
 		//si se quiere registrar los primeros "number" estimaciones:
-		//m.filter["FIRSTTREND"+stat] = filtered
+		//m.filter["FIRSTTREND"+ttype] = filtered
 		m.fields["TREND"+ttype] = int(filtered[len(filtered)-1])
 	} else {
 		m.filter["DATA"+ttype] = append(m.filter["DATA"+ttype], float64(m.fields[ttype]))
