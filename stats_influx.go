@@ -33,8 +33,6 @@ type maps struct{
 }
 
 func InfluxAgg(batch []cdns.DNSResult, m *maps) error {
-	//sacar defer y ponerlo en main??
-	//defer writeAPI.Flush()
 	
 	fields := m.fields
 	sources := m.sources
@@ -44,10 +42,9 @@ func InfluxAgg(batch []cdns.DNSResult, m *maps) error {
 	if len(batch) == 0 {
 		return nil
 	}
+
 	fields["TOTALQ"] = 0
 	fields["TOTALR"] = 0
-
-	//now :=  time.Now()
 
 	for _,b := range batch {
 		ip := b.SrcIP.String()
@@ -91,11 +88,10 @@ func (d database) InfluxStore(m *maps, batch []cdns.DNSResult) error{
 	return nil
 }
 
-//fn que reemplaza los store domin, sources, stats
-func (d database) StoreEachMap(mapa map[string]int, tipo1, tipo2 string , now time.Time) {
+func (d database) StoreEachMap(mapa map[string]int, metric, field string , now time.Time) {
 	for k,v := range mapa {
-		p := influxdb2.NewPoint(tipo1,
-			map[string]string{tipo2 : k},
+		p := influxdb2.NewPoint(metric,
+			map[string]string{field : k},
 			map[string]interface{}{"freq" : v},
 			now)
 		d.api.WritePoint(p)

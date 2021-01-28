@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/golang/mock v1.4.4
+	github.com/google/gopacket v1.1.18
 	github.com/influxdata/influxdb-client-go v1.4.0
 	github.com/influxdata/influxdb-client-go/v2 v2.1.0
 	github.com/lib/pq v1.8.0
