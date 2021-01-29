@@ -43,13 +43,9 @@ func (d database) InfluxCollect(resultChannel chan cdns.DNSResult, exiting chan 
         wg.Add(1)
         defer wg.Done()
 
-        //Esto seria un metodo de estructura db
-
         // Connect to InfluxDB
         client := d.c
         defer client.Close()
-        // Get non-blocking write client
-        //writeAPI := d.api
 
         batch := make([]cdns.DNSResult, 0, batchSize)
 
