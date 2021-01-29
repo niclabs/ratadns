@@ -69,16 +69,16 @@ func InfluxAgg(batch []cdns.DNSResult, m *maps) error {
 	fields["NXDOMAIN"] = responses[3]
 	fields["UNIQUERY"] = len(domains)
 
+	emafilter(m, 120, "TOTALQ")
+	emafilter(m, 5, "TOTALR")
+
 	return nil
 }
 
-func emafilter(m *maps, ttype string) error {
-
-	var number int = 120
+func emafilter(m *maps, number int, ttype string) error {
 
 	if m.filter["DATA"+ttype] == nil {
-		var array []float64
-		m.filter["DATA"+ttype] = array
+		m.filter["DATA"+ttype] = make([]float64, 0, number+1)
 	}
 
 	if len(m.filter["DATA"+ttype]) > number {
