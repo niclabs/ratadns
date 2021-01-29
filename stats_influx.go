@@ -69,27 +69,32 @@ func InfluxAgg(batch []cdns.DNSResult, m *maps) error {
 	m.fields["NXDOMAIN"] = m.responses[3]
 	m.fields["UNIQUERY"] = len(m.domains)
 
-	emafilter(m, 120, "TOTALQ")
-	emafilter(m, 5, "TOTALR")
+	for key := range m.fields {
+		if key[0:5] != "TREND" {
+			emafilter(m, 5, key)
+		}
+	}
 
 	return nil
 }
 
 func emafilter(m *maps, number int, ttype string) error {
 
+	var k float64 = 2 / (float64(number) + 1)
+
 	if m.filter["DATA"+ttype] == nil {
 		m.filter["DATA"+ttype] = make([]float64, 0, number+1)
 	}
 
 	if len(m.filter["DATA"+ttype]) > number {
-		step := Emastep(float64(number), float64(m.fields[ttype]), float64(m.fields["TREND"+ttype]))
+		step := Emastep(k, float64(m.fields[ttype]), m.filter[ttype][0])
+		m.filter[ttype][0] = step
 		m.fields["TREND"+ttype] = int(step)
 	} else if len(m.filter["DATA"+ttype]) == number {
 		m.filter["DATA"+ttype] = append(m.filter["DATA"+ttype], float64(m.fields[ttype]))
 		filtered := Ema(number, m.filter["DATA"+ttype])
-		//si se quiere registrar los primeros "number" estimaciones:
-		//m.filter["FIRSTTREND"+ttype] = filtered
-		m.fields["TREND"+ttype] = int(filtered[len(filtered)-1])
+		m.filter[ttype] = []float64{filtered[len(filtered)-1]}
+		m.fields["TREND"+ttype] = int(m.filter[ttype][0])
 	} else {
 		m.filter["DATA"+ttype] = append(m.filter["DATA"+ttype], float64(m.fields[ttype]))
 	}
