@@ -70,12 +70,10 @@ func InfluxAgg(batch []cdns.DNSResult, m *maps) error {
 	m.fields["UNIQUERY"] = len(m.domains)
 
 	for key := range m.fields {
-
-		if len(key) >= 5 {
-			if key[0:5] != "TREND" {
-				emafilter(m, 5, key)
-			}
+		if len(key) >= 5 && key[0:5] == "TREND" {
+			continue
 		}
+		emafilter(m, 5, key)
 	}
 
 	return nil
