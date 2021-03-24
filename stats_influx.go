@@ -70,7 +70,7 @@ func InfluxAgg(batch []cdns.DNSResult, m *maps) error {
 	m.fields["UNIQUERY"] = len(m.domains)
 
 	for key := range m.fields {
-		if len(key) >= 5 && key[0:5] == "TREND" {
+		if len(key) >= 5 && key[0:5] == "TREND" || len(key) >= 5 && key[0:5] == "ERROR" {
 			continue
 		}
 		emafilter(m, 5, key)
@@ -79,6 +79,7 @@ func InfluxAgg(batch []cdns.DNSResult, m *maps) error {
 	return nil
 }
 
+//filter and error
 func emafilter(m *maps, number int, ttype string) error {
 
 	var k float64 = 2 / (float64(number) + 1)
@@ -91,6 +92,8 @@ func emafilter(m *maps, number int, ttype string) error {
 		step := Emastep(k, float64(m.fields[ttype]), m.filter[ttype][0])
 		m.filter[ttype][0] = step
 		m.fields["TREND"+ttype] = int(step)
+		errorp := Errorfunc(m.fields[ttype], m.fields["TREND"+ttype])
+		m.fields["ERROR"+ttype] = errorp 
 	} else if len(m.filter["DATA"+ttype]) == number {
 		m.filter["DATA"+ttype] = append(m.filter["DATA"+ttype], float64(m.fields[ttype]))
 		filtered := Ema(number, m.filter["DATA"+ttype])
