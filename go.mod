@@ -3,6 +3,7 @@ module github.com/niclabs/ratadns
 go 1.13
 
 require (
+	github.com/ClickHouse/clickhouse-go v1.4.3
 	github.com/golang/mock v1.4.4
 	github.com/google/gopacket v1.1.18
 	github.com/influxdata/influxdb-client-go v1.4.0
