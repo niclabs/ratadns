@@ -3,7 +3,6 @@ package main
 import (
 	"strings"
 	"time"
-
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	dns "github.com/miekg/dns"
 	cdns "github.com/niclabs/dnszeppelin"

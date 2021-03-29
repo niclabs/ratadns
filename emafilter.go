@@ -28,7 +28,7 @@ func Emastep(k, actual, past float64) float64 {
 	return val
 }
 
-func Errorfunc(data, esti float64) float64{
+func Errorfunc(data, esti int) int{
 	abs := data - esti
 	rel := (abs/data)*100
 	return rel
