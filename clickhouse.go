@@ -49,7 +49,7 @@ func min(a, b int) int {
 	return b
 }
 
-func output(resultChannel chan cdns.DNSResult, exiting chan bool, wg *sync.WaitGroup, clickhouseHost string, batchSize, batchDelay uint, limit int, server string) {
+func ClickHouseCollector(resultChannel chan cdns.DNSResult, exiting chan bool, wg *sync.WaitGroup, clickhouseHost string, batchSize, batchDelay uint, limit int, server string) {
 	wg.Add(1)
 	defer wg.Done()
 	serverByte := []byte(server)

@@ -26,6 +26,10 @@ var defraggerChannelSize = flag.Uint("defraggerChannelSize", 500, "Size of the c
 var defraggerChannelReturnSize = flag.Uint("defraggerChannelReturnSize", 500, "Size of the channel where the defragged packets are returned")
 var filter = flag.String("filter", "((ip and (ip[9] == 6 or ip[9] == 17)) or (ip6 and (ip6[6] == 17 or ip6[6] == 6 or ip6[6] == 44)))", "BPF filter applied to the packet stream. If port is selected, the packets will not be defragged.")
 var gcTime = flag.Uint("gcTime", 10, "Time in seconds to garbage collect the tcp assembly and ip defragmentation")
+var clickhouseAddress = flag.String("clickhouseAddress", "localhost:9000", "Address of the clickhouse database to save the results")
+var clickhouseDelay = flag.Uint("clickhouseDelay", 1, "Number of seconds to batch the packets")
+var serverName = flag.String("serverName", "default", "Name of the server used to index the metrics.")
+
 var influxdb = flag.String("influxdb", "http://localhost:8086", "Address of the Influx database to save the results")
 var influxtoken = flag.String("influxtoken", "ratadns:ratadns", "InfluxDB token")
 var influxorg = flag.String("influxorg", "", "InfluxDB organization")
@@ -40,6 +44,7 @@ var tcpAssemblyChannelSize = flag.Uint("tcpAssemblyChannelSize", 1000, "Size of 
 var tcpHandlerCount = flag.Uint("tcpHandlers", 1, "Number of routines used to handle tcp assembly")
 var tcpResultChannelSize = flag.Uint("tcpResultChannelSize", 1000, "Size of the tcp result channel")
 var wsize = flag.Uint("wsize", 60, "Size of processing window in seconds (default: 60)")
+var packetLimit = flag.Int("packetLimit", 0, "Limit of packets logged to clickhouse every iteration. Default 0 (disabled)")
 
 func checkFlags() {
 	flag.Parse()
@@ -79,6 +84,9 @@ func main() {
 	exiting := make(chan bool)
 	var wg sync.WaitGroup
 
+	/* Using InfluxDB */
+	/* I know, technical debt */
+	/*
 	db := DefaultDB{*influxdb, *influxtoken, *influxorg, *influxbucket}
 	var d database
 	db.createClient(&d)
@@ -92,7 +100,9 @@ func main() {
 
 	m := maps{fields, sources, domains, responses, filtermap}
 	go d.InfluxCollect(resultChannel, exiting, &wg, *wsize, *batchSize, &m)
+	*/
 
+	go ClickHouseCollector(resultChannel, exiting, &wg, *clickhouseAddress, *batchSize, *clickhouseDelay, *packetLimit, *serverName)
 	// Setup mem profile
 	if *memprofile != "" {
 		go func() {
