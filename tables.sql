@@ -22,40 +22,10 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS DNS_DOMAIN_COUNT
 ENGINE=SummingMergeTree(DnsDate, (t, Server, Question), 8192, c) AS
   SELECT DnsDate, toStartOfMinute(timestamp) as t, Server, Question, count(*) as c FROM DNS_LOG WHERE QR=0 GROUP BY DnsDate, t, Server, Question;
 
--- View for unique domain count
-CREATE MATERIALIZED VIEW IF NOT EXISTS DNS_DOMAIN_UNIQUE
-ENGINE=AggregatingMergeTree(DnsDate, (t, Server), 8192) AS
-  SELECT DnsDate, toStartOfMinute(timestamp) as t, Server, uniqState(Question) AS UniqueDnsCount FROM DNS_LOG WHERE QR=0 GROUP BY Server, DnsDate, t;
-
--- View for count by protocol
-CREATE MATERIALIZED VIEW IF NOT EXISTS DNS_PROTOCOL
-ENGINE=SummingMergeTree(DnsDate, (t, Server, Protocol), 8192, (c)) AS
-  SELECT DnsDate, toStartOfMinute(timestamp) as t, Server, Protocol, count(*) as c FROM DNS_LOG GROUP BY Server, DnsDate, t, Protocol;
-
--- View with packet sizes
-CREATE MATERIALIZED VIEW IF NOT EXISTS DNS_GENERAL_AGGREGATIONS
-ENGINE=AggregatingMergeTree(DnsDate, (t, Server), 8192) AS
-SELECT DnsDate, toStartOfMinute(timestamp) as t, Server, sumState(Size) AS TotalSize, avgState(Size) AS AverageSize FROM DNS_LOG GROUP BY Server, DnsDate, t;
-
--- View with edns information
-CREATE MATERIALIZED VIEW IF NOT EXISTS DNS_EDNS
-ENGINE=AggregatingMergeTree(DnsDate, (t, Server), 8192) AS
-  SELECT DnsDate, toStartOfMinute(timestamp) as t, Server, sumState(Edns0Present) as EdnsCount, sumState(DoBit) as DoBitCount FROM DNS_LOG WHERE QR=0 GROUP BY Server, DnsDate, t;
-
--- View wih query OpCode
-CREATE MATERIALIZED VIEW IF NOT EXISTS DNS_OPCODE
-ENGINE=SummingMergeTree(DnsDate, (t, Server, OpCode), 8192, c) AS
-  SELECT DnsDate, toStartOfMinute(timestamp) as t, Server, OpCode, count(*) as c FROM DNS_LOG WHERE QR=0 GROUP BY Server, DnsDate, t, OpCode;
-
 -- View with Query Types
 CREATE MATERIALIZED VIEW IF NOT EXISTS DNS_TYPE
 ENGINE=SummingMergeTree(DnsDate, (t, Server, Type), 8192, c) AS
   SELECT DnsDate, toStartOfMinute(timestamp) as t, Server, Type, count(*) as c FROM DNS_LOG WHERE QR=0 GROUP BY Server, DnsDate, t, Type;
-
--- View with Query Class
-CREATE MATERIALIZED VIEW IF NOT EXISTS DNS_CLASS
-ENGINE=SummingMergeTree(DnsDate, (t, Server, Class), 8192, c) AS
-  SELECT DnsDate, toStartOfMinute(timestamp) as t, Server, Class, count(*) as c FROM DNS_LOG WHERE QR=0 GROUP BY Server, DnsDate, t, Class;
 
 -- View with query responses
 CREATE MATERIALIZED VIEW IF NOT EXISTS DNS_RESPONSECODE
