@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS DNS_LOG (
   timestamp DateTime,
   Server String,
   IPVersion UInt8,
-  IPPrefix UInt32,
+  IP String,
   Protocol FixedString(3),
   QR UInt8,
   OpCode UInt8,
@@ -63,5 +63,5 @@ ENGINE=SummingMergeTree(DnsDate, (t, Server, ResponseCode), 8192, c) AS
 
 -- View with IP Prefix
 CREATE MATERIALIZED VIEW IF NOT EXISTS DNS_IP_MASK
-ENGINE=SummingMergeTree(DnsDate, (t, Server, IPVersion, IPPrefix), 8192, c) AS
-  SELECT DnsDate, toStartOfMinute(timestamp) as t, Server, IPVersion, IPPrefix, count(*) as c FROM DNS_LOG GROUP BY Server, DnsDate, t, IPVersion, IPPrefix;
+ENGINE=SummingMergeTree(DnsDate, (t, Server, IPVersion, IP), 8192, c) AS
+  SELECT DnsDate, toStartOfMinute(timestamp) as t, Server, IPVersion, IP, count(*) as c FROM DNS_LOG GROUP BY Server, DnsDate, t, IPVersion, IP WHERE QR=0;

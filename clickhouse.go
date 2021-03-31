@@ -1,13 +1,11 @@
 package main
 
 import (
-	"encoding/binary"
 	"fmt"
 	cdns "github.com/niclabs/dnszeppelin"
 	"github.com/ClickHouse/clickhouse-go"
 	data "github.com/ClickHouse/clickhouse-go/lib/data"
 	"log"
-	"net"
 	"sync"
 	"time"
 )
@@ -93,7 +91,7 @@ func SendData(connect clickhouse.Clickhouse, batch []cdns.DNSResult, server []by
 		return err
 	}
 
-	_, err = connect.Prepare("INSERT INTO DNS_LOG (DnsDate, timestamp, Server, IPVersion, IPPrefix, Protocol, QR, OpCode, Class, Type, ResponseCode, Question, Size, Edns0Present, DoBit) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+	_, err = connect.Prepare("INSERT INTO DNS_LOG (DnsDate, timestamp, Server, IPVersion, IP, Protocol, QR, OpCode, Class, Type, ResponseCode, Question, Size, Edns0Present, DoBit) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
 	if err != nil {
 		return err
 	}
@@ -124,11 +122,8 @@ func SendData(connect clickhouse.Clickhouse, batch []cdns.DNSResult, server []by
 					b.WriteBytes(2, server)
 					b.WriteUInt8(3, batch[k].IPVersion)
 
-					ip := batch[k].DstIP
-					if batch[k].IPVersion == 4 {
-						ip = ip.Mask(net.IPv4Mask(0xff, 0, 0, 0))
-					}
-					b.WriteUInt32(4, binary.BigEndian.Uint32(ip[:4]))
+					ip := batch[k].SrcIP.String()
+					b.WriteString(4, string(ip))
 					b.WriteFixedString(5, []byte(batch[k].Protocol))
 					QR := uint8(0)
 					if batch[k].DNS.Response {
