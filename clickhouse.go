@@ -84,7 +84,7 @@ func SendData(connect clickhouse.Clickhouse, batch []cdns.DNSResult, server []by
 	if connect == nil {
 		return nil
 	}
-	log.Println("Sending ", len(batch))
+//	log.Println("Sending ", len(batch))
 
 	_, err := connect.Begin()
 	if err != nil {
