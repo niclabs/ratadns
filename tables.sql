@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS DNS_LOG (
   DoBit UInt8,
   ResponseCode UInt8,
   Question String,
-  Size UInt16
+  Size UInt16,
+  IPdst String
 ) engine=MergeTree(DnsDate, (timestamp, Server), 8192);
 
 -- View for top queried domains

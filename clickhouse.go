@@ -91,7 +91,7 @@ func SendData(connect clickhouse.Clickhouse, batch []cdns.DNSResult, server []by
 		return err
 	}
 
-	_, err = connect.Prepare("INSERT INTO DNS_LOG (DnsDate, timestamp, Server, IPVersion, IP, Protocol, QR, OpCode, Class, Type, ResponseCode, Question, Size, Edns0Present, DoBit) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+	_, err = connect.Prepare("INSERT INTO DNS_LOG (DnsDate, timestamp, Server, IPVersion, IP, Protocol, QR, OpCode, Class, Type, ResponseCode, Question, Size, Edns0Present, DoBit, IPdst) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
 	if err != nil {
 		return err
 	}
@@ -123,6 +123,7 @@ func SendData(connect clickhouse.Clickhouse, batch []cdns.DNSResult, server []by
 					b.WriteUInt8(3, batch[k].IPVersion)
 
 					ip := batch[k].SrcIP.String()
+					ipdst := batch[k].DstIP.String()
 					b.WriteString(4, string(ip))
 					b.WriteFixedString(5, []byte(batch[k].Protocol))
 					QR := uint8(0)
@@ -146,6 +147,7 @@ func SendData(connect clickhouse.Clickhouse, batch []cdns.DNSResult, server []by
 					}
 					b.WriteUInt8(13, edns)
 					b.WriteUInt8(14, doBit)
+					b.WriteString(15, ipdst)
 				}
 			}
 			if err := connect.WriteBlock(b); err != nil {
