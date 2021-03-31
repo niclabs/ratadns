@@ -66,3 +66,9 @@ ENGINE=SummingMergeTree(DnsDate, (t, Server, ResponseCode), 8192, c) AS
 CREATE MATERIALIZED VIEW IF NOT EXISTS DNS_IP_MASK
 ENGINE=SummingMergeTree(DnsDate, (t, Server, IPVersion, IP), 8192, c) AS
   SELECT DnsDate, toStartOfMinute(timestamp) as t, Server, IPVersion, IP, count(*) as c FROM DNS_LOG WHERE QR=0 GROUP BY Server, DnsDate, t, IPVersion, IP;
+
+-- View with IP servers
+CREATE MATERIALIZED VIEW IF NOT EXISTS DNS_IP_SERVER
+ENGINE=SummingMergeTree(DnsDate, (t, Server, IPVersion, IPdst), 8192, c) AS
+  SELECT DnsDate, toStartOfMinute(timestamp) as t, Server, IPVersion, IPdst, count(*) as c FROM DNS_LOG WHERE QR=0 GROUP BY Server, DnsDate, t, IPVersion, IPdst;
+
